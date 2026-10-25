@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+sqlx = { version = "0.8", features = ["runtime-tokio-native-tls", "postgres", "macros", "chrono"] }
 axum = "0.8.9"
 serde = {version = "1.0.229", features = ["derive"]}
 tokio = { version = "1.53.3", features = ["full"] }
+dotenvy = "0.15.7"

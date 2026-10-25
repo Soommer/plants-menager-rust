@@ -8,10 +8,12 @@ use axum::{
     Router,
 };
 use serde::Serialize;
+use sqlx::PgPool;
+use dotenvy;
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 struct AppState {
-    counter: Arc<Mutex<i32>>
+    db: PgPool,
 }
 
 
@@ -24,10 +26,21 @@ struct HealthResponse {
 
 #[tokio::main]
 async fn main(){
-    let state = AppState::default();
+    // wczytywanie env
+    dotenvy::dotenv().ok();
+
+    // db connection string
+    let database_url = std::env::var("DATABAES_URL")
+        .expect("Brak zmiennej DATABASE_URL w .env");
+
+    let db = sqlx::PgPool::connect(&database_url)
+        .await
+        .expect("NIe udało się połączyć z bazą");
+
+    let state = AppState {db};
     let app = Router::new()
         .route("/api/health/live", get(health_check))
-        .route("api/health/ready", get(health_response))
+        .route("/api/health/ready", get(health_response))
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
